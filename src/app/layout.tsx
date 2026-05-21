@@ -16,9 +16,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'WellMap — Clean Water for West Africa',
+  title: 'Le Pont — A Bridge to Africa',
   description:
-    'Interactive map of clean water wells built across Ghana, Togo, and Benin by our NGO.',
+    'Interactive map of clean water wells built across Ghana, Togo, and Benin by Le Pont, a bridge to Africa.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

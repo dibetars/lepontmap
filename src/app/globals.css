@@ -8,36 +8,6 @@ body {
   overflow: hidden;
 }
 
-/* ── Fog overlay elements ─────────────────────────────────── */
-.fog-left {
-  position: absolute;
-  top: -20%;
-  left: -10%;
-  width: 55%;
-  height: 140%;
-  background: radial-gradient(
-    ellipse at 20% 50%,
-    rgba(220, 230, 220, 0.65) 0%,
-    rgba(220, 230, 220, 0.2) 35%,
-    transparent 70%
-  );
-  pointer-events: none;
-}
-
-.fog-right {
-  position: absolute;
-  top: -20%;
-  right: -10%;
-  width: 55%;
-  height: 140%;
-  background: radial-gradient(
-    ellipse at 80% 50%,
-    rgba(220, 230, 220, 0.55) 0%,
-    rgba(220, 230, 220, 0.15) 35%,
-    transparent 70%
-  );
-  pointer-events: none;
-}
 
 /* ── Mapbox overrides ─────────────────────────────────────── */
 .mapboxgl-ctrl-group {

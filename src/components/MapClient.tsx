@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import Map, { Marker, NavigationControl } from 'react-map-gl';
-import type { MapRef } from 'react-map-gl';
+import type { MapRef, MapLoadEvent } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { Well } from '@/lib/types';
 import Navigation from './Navigation';
@@ -15,13 +15,31 @@ interface Props {
 }
 
 const REGION_CENTER = { longitude: 0.5, latitude: 9.5, zoom: 6.5 };
-const LANDING_VIEW = { longitude: 0.5, latitude: 9.0, zoom: 5.2 };
+const LANDING_VIEW  = { longitude: 0.5, latitude: 9.0, zoom: 5.2 };
 
-export default function MapClient({ wells, ngoName = 'WellMap' }: Props) {
+// Layer ID fragments to strip from satellite-streets — roads, tunnels, bridges, paths
+const ROAD_FRAGMENTS = ['road', 'tunnel', 'bridge', 'path', 'ferry', 'pedestrian', 'motorway'];
+
+export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
   const [showLanding, setShowLanding] = useState(true);
   const [selectedWell, setSelectedWell] = useState<Well | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const mapRef = useRef<MapRef>(null);
+
+  // Strip all road / path / bridge layers once the style loads
+  const handleMapLoad = useCallback((e: MapLoadEvent) => {
+    const map = e.target;
+    const toRemove = map
+      .getStyle()
+      .layers?.filter((l) =>
+        ROAD_FRAGMENTS.some((fragment) => l.id.toLowerCase().includes(fragment))
+      )
+      .map((l) => l.id) ?? [];
+
+    toRemove.forEach((id) => {
+      if (map.getLayer(id)) map.removeLayer(id);
+    });
+  }, []);
 
   const handleExplore = useCallback(() => {
     setShowLanding(false);
@@ -61,8 +79,15 @@ export default function MapClient({ wells, ngoName = 'WellMap' }: Props) {
         <div className="text-5xl">💧</div>
         <h1 className="font-serif text-3xl text-forest">Add your Mapbox token</h1>
         <p className="font-sans text-sm text-forest/60 max-w-sm">
-          Copy <code className="bg-forest/10 px-1.5 py-0.5 rounded text-forest font-mono text-xs">.env.local.example</code> to{' '}
-          <code className="bg-forest/10 px-1.5 py-0.5 rounded text-forest font-mono text-xs">.env.local</code> and add your{' '}
+          Copy{' '}
+          <code className="bg-forest/10 px-1.5 py-0.5 rounded text-forest font-mono text-xs">
+            .env.local.example
+          </code>{' '}
+          to{' '}
+          <code className="bg-forest/10 px-1.5 py-0.5 rounded text-forest font-mono text-xs">
+            .env.local
+          </code>{' '}
+          and add your{' '}
           <a
             href="https://account.mapbox.com/"
             target="_blank"
@@ -79,7 +104,7 @@ export default function MapClient({ wells, ngoName = 'WellMap' }: Props) {
 
   return (
     <div className="relative h-screen w-full overflow-hidden">
-      {/* Mapbox map — always mounted */}
+      {/* Mapbox map */}
       <Map
         ref={mapRef}
         mapboxAccessToken={token}
@@ -88,11 +113,10 @@ export default function MapClient({ wells, ngoName = 'WellMap' }: Props) {
         mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
         attributionControl={false}
         logoPosition="bottom-right"
+        onLoad={handleMapLoad}
       >
-        {/* Compass only (no zoom buttons — those clash with the aesthetic) */}
         <NavigationControl position="bottom-left" showCompass showZoom={false} />
 
-        {/* Well markers — only visible after leaving landing */}
         {!showLanding &&
           wells.map((well) => (
             <Marker
@@ -113,23 +137,19 @@ export default function MapClient({ wells, ngoName = 'WellMap' }: Props) {
       {/* ── Landing overlay ─────────────────────────────────── */}
       {showLanding && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
-          {/* Fog layers */}
-          <div className="fog-left animate-fog-left" />
-          <div className="fog-right animate-fog-right" />
-
-          {/* Soft dark veil */}
-          <div className="absolute inset-0 bg-black/35" />
+          {/* Soft dark veil over map */}
+          <div className="absolute inset-0 bg-black/30" />
 
           {/* Hero text */}
           <div className="relative z-10 text-center text-white px-6 pointer-events-auto animate-fade-in-slow">
             <p className="font-sans text-[11px] tracking-[0.4em] text-gold uppercase mb-5">
-              Clean Water For
+              A Bridge to Africa
             </p>
             <h1 className="font-serif font-light leading-[0.92] text-[clamp(64px,12vw,120px)] mb-6">
-              WEST<br />AFRICA
+              Le Pont
             </h1>
             <p className="font-sans text-sm text-white/75 mb-10 max-w-xs mx-auto leading-relaxed">
-              Transforming communities in Ghana, Togo &amp; Benin through access to safe, clean water.
+              Bringing safe, clean water to communities in Ghana, Togo &amp; Benin.
             </p>
             <button
               onClick={handleExplore}

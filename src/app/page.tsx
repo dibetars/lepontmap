@@ -26,7 +26,7 @@ export default async function Home() {
   return (
     <MapClient
       wells={wells}
-      ngoName="WellMap" // TODO: Replace with your NGO name
+      ngoName="Le Pont"
     />
   );
 }
