@@ -33,7 +33,7 @@ export default function ExploreMenu({ wells, onWellClick, onClose }: Props) {
       />
 
       {/* Card */}
-      <div className="relative bg-cream w-80 max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
+      <div className="relative bg-cream w-[calc(100%-2rem)] max-w-[320px] max-h-[85vh] flex flex-col shadow-2xl animate-fade-in">
         {/* Header */}
         <div className="px-8 pt-8 pb-5">
           <p className="font-sans text-[10px] text-gold tracking-[0.35em] uppercase mb-3">

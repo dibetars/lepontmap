@@ -27,10 +27,15 @@ export default function WellPanel({ well, onClose }: Props) {
 
   return (
     <div
-      className={`absolute inset-y-0 right-0 w-full max-w-[420px] z-30 flex flex-col shadow-2xl ${
-        closing ? 'animate-slide-out-right' : 'animate-slide-in-right'
+      className={`absolute bottom-0 left-0 right-0 max-h-[75vh] md:inset-y-0 md:left-auto md:right-0 md:w-full md:max-w-[420px] md:max-h-none z-30 flex flex-col shadow-2xl ${
+        closing ? 'panel-exit' : 'panel-enter'
       }`}
     >
+      {/* Mobile drag handle */}
+      <div className="md:hidden flex justify-center pt-3 pb-1 bg-cream shrink-0">
+        <div className="w-10 h-1 rounded-full bg-forest/20" />
+      </div>
+
       {/* Header bar */}
       <div className="bg-forest text-white flex items-center justify-between px-6 py-[18px] shrink-0">
         <h2 className="font-sans text-[11px] tracking-[0.25em] uppercase truncate pr-4">

@@ -9,6 +9,41 @@ body {
 }
 
 
+/* ── Responsive panel animations ─────────────────────────── */
+/* Mobile: slides up from bottom. Desktop (md+): slides in from right. */
+.panel-enter {
+  animation: slideInUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.panel-exit {
+  animation: slideOutDown 0.35s ease-in forwards;
+}
+
+@media (min-width: 768px) {
+  .panel-enter {
+    animation: slideInRight 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .panel-exit {
+    animation: slideOutRight 0.35s ease-in forwards;
+  }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes slideOutDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
 /* ── Mapbox overrides ─────────────────────────────────────── */
 .mapboxgl-ctrl-group {
   background: transparent !important;
