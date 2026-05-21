@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Fog overlay elements ─────────────────────────────────── */
+.fog-left {
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 55%;
+  height: 140%;
+  background: radial-gradient(
+    ellipse at 20% 50%,
+    rgba(220, 230, 220, 0.65) 0%,
+    rgba(220, 230, 220, 0.2) 35%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.fog-right {
+  position: absolute;
+  top: -20%;
+  right: -10%;
+  width: 55%;
+  height: 140%;
+  background: radial-gradient(
+    ellipse at 80% 50%,
+    rgba(220, 230, 220, 0.55) 0%,
+    rgba(220, 230, 220, 0.15) 35%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ── Mapbox overrides ─────────────────────────────────────── */
+.mapboxgl-ctrl-group {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.mapboxgl-ctrl-group button {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-radius: 50% !important;
+  width: 38px !important;
+  height: 38px !important;
+  margin-bottom: 6px !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background-color: rgba(255, 255, 255, 1) !important;
+}
+
+.mapboxgl-ctrl-attrib,
+.mapboxgl-ctrl-logo {
+  opacity: 0.4 !important;
+  transform: scale(0.75) !important;
+  transform-origin: bottom right !important;
+}
