@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import Map, { Marker, NavigationControl } from 'react-map-gl';
-import type { MapRef, MapLoadEvent } from 'react-map-gl';
+import type { MapRef } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import type { Well } from '@/lib/types';
 import Navigation from './Navigation';
@@ -27,8 +27,9 @@ export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
   const mapRef = useRef<MapRef>(null);
 
   // Strip all road / path / bridge layers once the style loads
-  const handleMapLoad = useCallback((e: MapLoadEvent) => {
-    const map = e.target;
+  const handleMapLoad = useCallback(() => {
+    const map = mapRef.current?.getMap();
+    if (!map) return;
     const toRemove = map
       .getStyle()
       .layers?.filter((l) =>
