@@ -14,8 +14,8 @@ interface Props {
   ngoName?: string;
 }
 
-const REGION_CENTER = { longitude: 0.5, latitude: 9.5, zoom: 6.5 };
-const LANDING_VIEW  = { longitude: 0.5, latitude: 9.0, zoom: 5.2 };
+const REGION_CENTER = { longitude: 0.9, latitude: 8.5, zoom: 7.0 };
+const LANDING_VIEW  = { longitude: 0.9, latitude: 8.0, zoom: 6.0 };
 
 // Layer ID fragments to strip from satellite-streets — roads, tunnels, bridges, paths
 const ROAD_FRAGMENTS = ['road', 'tunnel', 'bridge', 'path', 'ferry', 'pedestrian', 'motorway'];
@@ -150,7 +150,7 @@ export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
               Le Pont
             </h1>
             <p className="font-sans text-sm text-white/75 mb-10 max-w-xs mx-auto leading-relaxed">
-              Bringing safe, clean water to communities in Ghana, Togo &amp; Benin.
+              Bringing safe, clean water to communities across Togo.
             </p>
             <button
               onClick={handleExplore}
