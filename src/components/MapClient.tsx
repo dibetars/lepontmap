@@ -12,16 +12,26 @@ import WellPanel from './WellPanel';
 interface Props {
   wells: Well[];
   ngoName?: string;
+  autoStart?: boolean;
+  lockedCountry?: string;
 }
 
 const REGION_CENTER = { longitude: 0.9, latitude: 8.5, zoom: 7.0 };
 const LANDING_VIEW  = { longitude: 0.9, latitude: 8.0, zoom: 6.0 };
 
+const COUNTRY_CENTERS: Record<string, { longitude: number; latitude: number; zoom: number }> = {
+  Togo:  { longitude: 0.9,  latitude: 8.5, zoom: 7.0 },
+  Ghana: { longitude: -1.0, latitude: 8.0, zoom: 7.0 },
+  Benin: { longitude: 2.3,  latitude: 9.3, zoom: 7.0 },
+};
+
 // Layer ID fragments to strip from satellite-streets — roads, tunnels, bridges, paths
 const ROAD_FRAGMENTS = ['road', 'tunnel', 'bridge', 'path', 'ferry', 'pedestrian', 'motorway'];
 
-export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
-  const [showLanding, setShowLanding] = useState(true);
+export default function MapClient({ wells, ngoName = 'Le Pont', autoStart = false, lockedCountry }: Props) {
+  const visibleWells = lockedCountry ? wells.filter((w) => w.country === lockedCountry) : wells;
+  const regionCenter = (lockedCountry && COUNTRY_CENTERS[lockedCountry]) ?? REGION_CENTER;
+  const [showLanding, setShowLanding] = useState(!autoStart);
   const [selectedWell, setSelectedWell] = useState<Well | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const mapRef = useRef<MapRef>(null);
@@ -45,12 +55,12 @@ export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
   const handleExplore = useCallback(() => {
     setShowLanding(false);
     mapRef.current?.flyTo({
-      center: [REGION_CENTER.longitude, REGION_CENTER.latitude],
-      zoom: REGION_CENTER.zoom,
+      center: [regionCenter.longitude, regionCenter.latitude],
+      zoom: regionCenter.zoom,
       duration: 2800,
       essential: true,
     });
-  }, []);
+  }, [regionCenter]);
 
   const handleWellClick = useCallback((well: Well) => {
     setSelectedWell(well);
@@ -66,11 +76,11 @@ export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
   const handleClosePanel = useCallback(() => {
     setSelectedWell(null);
     mapRef.current?.flyTo({
-      center: [REGION_CENTER.longitude, REGION_CENTER.latitude],
-      zoom: REGION_CENTER.zoom,
+      center: [regionCenter.longitude, regionCenter.latitude],
+      zoom: regionCenter.zoom,
       duration: 1600,
     });
-  }, []);
+  }, [regionCenter]);
 
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
@@ -119,7 +129,7 @@ export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
         <NavigationControl position="bottom-left" showCompass showZoom={false} />
 
         {!showLanding &&
-          wells.map((well) => (
+          visibleWells.map((well) => (
             <Marker
               key={well.id}
               longitude={well.longitude}
@@ -174,7 +184,7 @@ export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
       {!showLanding && (
         <Navigation
           onMenuClick={() => setMenuOpen(true)}
-          wellCount={wells.length}
+          wellCount={visibleWells.length}
           ngoName={ngoName}
         />
       )}
@@ -182,7 +192,7 @@ export default function MapClient({ wells, ngoName = 'Le Pont' }: Props) {
       {/* ── Explore menu ────────────────────────────────────── */}
       {menuOpen && (
         <ExploreMenu
-          wells={wells}
+          wells={visibleWells}
           onWellClick={handleWellClick}
           onClose={() => setMenuOpen(false)}
         />

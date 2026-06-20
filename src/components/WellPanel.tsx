@@ -17,17 +17,64 @@ interface Props {
   onClose: () => void;
 }
 
+function getPhotos(well: Well): string[] {
+  if (well.images && well.images.length > 0) return well.images.slice(0, 2);
+  if (well.image_url) return [well.image_url];
+  return [];
+}
+
+function getYouTubeId(url: string): string | null {
+  const m =
+    url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/) ||
+    url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function VideoPlayer({ url }: { url: string }) {
+  const ytId = getYouTubeId(url);
+
+  if (ytId) {
+    return (
+      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          src={`https://www.youtube-nocookie.com/embed/${ytId}`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title="Well video"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <video
+      src={url}
+      controls
+      playsInline
+      className="w-full"
+      style={{ maxHeight: '240px', background: '#000' }}
+    />
+  );
+}
+
 export default function WellPanel({ well, onClose }: Props) {
   const [closing, setClosing] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
+
+  const photos = getPhotos(well);
 
   const handleClose = () => {
     setClosing(true);
     setTimeout(onClose, 350);
   };
 
+  const prevPhoto = () => setPhotoIndex((i) => Math.max(0, i - 1));
+  const nextPhoto = () => setPhotoIndex((i) => Math.min(photos.length - 1, i + 1));
+
   return (
     <div
-      className={`absolute bottom-0 left-0 right-0 max-h-[75vh] md:inset-y-0 md:left-auto md:right-0 md:w-full md:max-w-[420px] md:max-h-none z-30 flex flex-col shadow-2xl ${
+      className={`absolute bottom-0 left-0 right-0 max-h-[85vh] md:inset-y-0 md:left-auto md:right-0 md:w-full md:max-w-[420px] md:max-h-none z-30 flex flex-col shadow-2xl ${
         closing ? 'panel-exit' : 'panel-enter'
       }`}
     >
@@ -60,21 +107,74 @@ export default function WellPanel({ well, onClose }: Props) {
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto bg-cream">
-        {/* Photo */}
-        <div className="relative h-52 w-full bg-forest-mid">
-          {well.image_url && (
+
+        {/* ── Photo carousel ───────────────────────────────── */}
+        {photos.length > 0 && (
+          <div className="relative h-56 w-full bg-forest/20 shrink-0 overflow-hidden">
             <Image
-              src={well.image_url}
-              alt={`${well.name} — ${well.community}`}
+              key={photos[photoIndex]}
+              src={photos[photoIndex]}
+              alt={`${well.name} photo ${photoIndex + 1}`}
               fill
-              className="object-cover"
+              className="object-cover transition-opacity duration-300"
               unoptimized
             />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-        </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
 
-        {/* Content */}
+            {/* Arrows */}
+            {photos.length > 1 && (
+              <>
+                <button
+                  onClick={prevPhoto}
+                  disabled={photoIndex === 0}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors disabled:opacity-30"
+                  aria-label="Previous photo"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={nextPhoto}
+                  disabled={photoIndex === photos.length - 1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors disabled:opacity-30"
+                  aria-label="Next photo"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                {/* Dot indicators */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  {photos.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPhotoIndex(i)}
+                      className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                        i === photoIndex ? 'bg-white' : 'bg-white/40'
+                      }`}
+                      aria-label={`Photo ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── No photo placeholder ─────────────────────────── */}
+        {photos.length === 0 && (
+          <div className="h-36 w-full bg-forest/10 flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="w-10 h-10 text-forest/20">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 15l-5-5L5 21" />
+            </svg>
+          </div>
+        )}
+
+        {/* ── Content ──────────────────────────────────────── */}
         <div className="px-8 py-8">
           {/* Country badge */}
           <div className="flex items-center gap-2 mb-3">
@@ -109,7 +209,19 @@ export default function WellPanel({ well, onClose }: Props) {
 
           {/* Description */}
           {well.description && (
-            <p className="font-sans text-sm text-forest/75 leading-relaxed">{well.description}</p>
+            <p className="font-sans text-sm text-forest/75 leading-relaxed mb-8">{well.description}</p>
+          )}
+
+          {/* ── Video ──────────────────────────────────────── */}
+          {well.video_url && (
+            <div>
+              <p className="font-sans text-[10px] text-gold tracking-[0.25em] uppercase mb-3">
+                Video
+              </p>
+              <div className="rounded overflow-hidden shadow-md">
+                <VideoPlayer url={well.video_url} />
+              </div>
+            </div>
           )}
         </div>
       </div>

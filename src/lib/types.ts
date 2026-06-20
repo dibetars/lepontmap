@@ -12,6 +12,8 @@ export interface Well {
   people_served?: number;
   description?: string;
   image_url?: string;
+  images?: string[];
+  video_url?: string;
   status: WellStatus;
   created_at?: string;
 }

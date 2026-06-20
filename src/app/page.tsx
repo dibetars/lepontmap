@@ -21,12 +21,24 @@ async function getWells() {
   return sampleWells;
 }
 
-export default async function Home() {
+const VALID_COUNTRIES = ['Ghana', 'Togo', 'Benin'] as const;
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { embed?: string; country?: string };
+}) {
   const wells = await getWells();
+  const autoStart = searchParams.embed === '1';
+  const lockedCountry = VALID_COUNTRIES.find(
+    (c) => c.toLowerCase() === searchParams.country?.toLowerCase()
+  );
   return (
     <MapClient
       wells={wells}
       ngoName="Le Pont"
+      autoStart={autoStart}
+      lockedCountry={lockedCountry}
     />
   );
 }
