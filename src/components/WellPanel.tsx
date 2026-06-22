@@ -4,13 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { Well } from '@/lib/types';
 
-const FLAG: Record<string, string> = { Ghana: '🇬🇭', Togo: '🇹🇬', Benin: '🇧🇯' };
-
-const STATUS_COLOR: Record<string, string> = {
-  active: 'bg-emerald-500',
-  maintenance: 'bg-amber-500',
-  planned: 'bg-sky-500',
-};
 
 interface Props {
   well: Well;
@@ -174,66 +167,19 @@ export default function WellPanel({ well, onClose }: Props) {
           </div>
         )}
 
-        {/* ── Content ──────────────────────────────────────── */}
-        <div className="px-8 py-8">
-          {/* Country badge */}
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">{FLAG[well.country]}</span>
-            <span className="font-sans text-[10px] text-gold tracking-[0.25em] uppercase">
-              {well.country}
-            </span>
-          </div>
-
-          <h3 className="font-serif text-3xl text-forest leading-tight mb-1">{well.name}</h3>
-          <p className="font-sans text-sm text-forest/60 mb-7">{well.community}</p>
-
-          {/* Stats grid */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-5 py-6 border-y border-forest/10 mb-7">
-            {well.year_built && (
-              <Stat label="Year Built" value={well.year_built.toString()} />
-            )}
-            {well.people_served && (
-              <Stat label="People Served" value={well.people_served.toLocaleString()} />
-            )}
-            <div>
-              <p className="font-sans text-[10px] text-gold tracking-[0.2em] uppercase mb-1.5">
-                Status
-              </p>
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${STATUS_COLOR[well.status]}`} />
-                <span className="font-sans text-sm text-forest capitalize">{well.status}</span>
-              </div>
+        {/* ── Video ──────────────────────────────────────── */}
+        {well.video_url && (
+          <div className="px-8 py-6">
+            <p className="font-sans text-[10px] text-gold tracking-[0.25em] uppercase mb-3">
+              Video
+            </p>
+            <div className="rounded overflow-hidden shadow-md">
+              <VideoPlayer url={well.video_url} />
             </div>
-            <Stat label="Coordinates" value={`${well.latitude.toFixed(3)}°, ${well.longitude.toFixed(3)}°`} />
           </div>
-
-          {/* Description */}
-          {well.description && (
-            <p className="font-sans text-sm text-forest/75 leading-relaxed mb-8">{well.description}</p>
-          )}
-
-          {/* ── Video ──────────────────────────────────────── */}
-          {well.video_url && (
-            <div>
-              <p className="font-sans text-[10px] text-gold tracking-[0.25em] uppercase mb-3">
-                Video
-              </p>
-              <div className="rounded overflow-hidden shadow-md">
-                <VideoPlayer url={well.video_url} />
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="font-sans text-[10px] text-gold tracking-[0.2em] uppercase mb-1.5">{label}</p>
-      <p className="font-serif text-xl text-forest">{value}</p>
-    </div>
-  );
-}
