@@ -1,6 +1,10 @@
 <!--
-  Le Pont — Country Picker + Map Embed
+  Le Pont — Country Picker + Map Modal
   Paste this whole block into a single Elementor "HTML" widget.
+
+  Ghana and Benin are disabled (no wells live there yet) — only
+  Togo opens the map. Re-enable a country by removing its
+  "lepont-card--disabled" class and "disabled" attribute below.
 -->
 <div id="lepont-embed-root">
   <div class="lepont-grid">
@@ -8,23 +12,25 @@
       <div class="lepont-photo" style="background-image:url('https://lepontmap.vercel.app/images/togo.png')"></div>
       <div class="lepont-label">Togo</div>
     </button>
-    <button class="lepont-card" data-country="Ghana">
+    <button class="lepont-card lepont-card--disabled" data-country="Ghana" disabled>
       <div class="lepont-photo" style="background-image:url('https://lepontmap.vercel.app/images/ghana.png')"></div>
-      <div class="lepont-label">Ghana</div>
+      <div class="lepont-label">Ghana<span class="lepont-soon">Coming soon</span></div>
     </button>
-    <button class="lepont-card" data-country="Benin">
+    <button class="lepont-card lepont-card--disabled" data-country="Benin" disabled>
       <div class="lepont-photo" style="background-image:url('https://lepontmap.vercel.app/images/benin.png')"></div>
-      <div class="lepont-label">Benin</div>
+      <div class="lepont-label">Benin<span class="lepont-soon">Coming soon</span></div>
     </button>
   </div>
 
-  <div id="lepont-map-wrap" style="display:none;">
-    <div class="lepont-map-frame">
+  <div id="lepont-modal" class="lepont-modal" aria-hidden="true">
+    <div class="lepont-modal-backdrop"></div>
+    <div class="lepont-modal-body">
+      <button id="lepont-modal-close" class="lepont-modal-close" aria-label="Close map">&times;</button>
       <iframe
         id="lepont-map-iframe"
         src=""
         width="100%"
-        height="650"
+        height="100%"
         style="border:none;display:block;"
         allowfullscreen
         loading="lazy"
@@ -68,8 +74,16 @@
     text-align: left;
   }
 
+  .lepont-card--disabled {
+    cursor: not-allowed;
+  }
+
+  .lepont-card--disabled .lepont-photo {
+    filter: grayscale(60%) brightness(0.6);
+  }
+
   .lepont-photo {
-    height: 200px;
+    height: 240px;
     width: 100%;
     background-size: cover;
     background-position: center;
@@ -77,7 +91,7 @@
     transition: transform 0.4s ease;
   }
 
-  .lepont-card:hover .lepont-photo {
+  .lepont-card:not(.lepont-card--disabled):hover .lepont-photo {
     transform: scale(1.05);
   }
 
@@ -87,19 +101,74 @@
     font-weight: 700;
     font-size: 20px;
     padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
   }
 
-  #lepont-map-wrap {
-    margin-top: 28px;
-    max-width: 960px;
-    margin-left: auto;
-    margin-right: auto;
+  .lepont-card--disabled .lepont-label {
+    background: #5c6b52;
   }
 
-  .lepont-map-frame {
+  .lepont-soon {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.18);
+    padding: 4px 8px;
+    border-radius: 999px;
+  }
+
+  /* ── Modal ──────────────────────────────────────────── */
+  .lepont-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+  }
+
+  .lepont-modal.lepont-modal--open {
+    display: block;
+  }
+
+  .lepont-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+  }
+
+  .lepont-modal-body {
+    position: relative;
+    width: 90vw;
+    height: 85vh;
+    max-width: 1100px;
+    margin: 5vh auto;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    background: #000;
+  }
+
+  .lepont-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  .lepont-modal-close:hover {
+    background: rgba(0,0,0,0.8);
   }
 </style>
 
@@ -107,17 +176,36 @@
   (function () {
     var BASE_URL = 'https://lepontmap.vercel.app';
 
-    var cards = document.querySelectorAll('#lepont-embed-root .lepont-card');
-    var wrap = document.getElementById('lepont-map-wrap');
+    var cards = document.querySelectorAll('#lepont-embed-root .lepont-card:not(.lepont-card--disabled)');
+    var modal = document.getElementById('lepont-modal');
+    var backdrop = modal.querySelector('.lepont-modal-backdrop');
+    var closeBtn = document.getElementById('lepont-modal-close');
     var iframe = document.getElementById('lepont-map-iframe');
+
+    function openModal(country) {
+      iframe.src = BASE_URL + '/?embed=1&country=' + encodeURIComponent(country);
+      modal.classList.add('lepont-modal--open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.remove('lepont-modal--open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      iframe.src = '';
+    }
 
     cards.forEach(function (card) {
       card.addEventListener('click', function () {
-        var country = card.getAttribute('data-country');
-        iframe.src = BASE_URL + '/?embed=1&country=' + encodeURIComponent(country);
-        wrap.style.display = 'block';
-        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        openModal(card.getAttribute('data-country'));
       });
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeModal();
     });
   })();
 </script>
