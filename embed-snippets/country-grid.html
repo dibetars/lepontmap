@@ -1,0 +1,123 @@
+<!--
+  Le Pont — Country Picker + Map Embed
+  Paste this whole block into a single Elementor "HTML" widget.
+-->
+<div id="lepont-embed-root">
+  <div class="lepont-grid">
+    <button class="lepont-card" data-country="Togo">
+      <div class="lepont-photo" style="background-image:url('https://lepontmap.vercel.app/images/togo.png')"></div>
+      <div class="lepont-label">Togo</div>
+    </button>
+    <button class="lepont-card" data-country="Ghana">
+      <div class="lepont-photo" style="background-image:url('https://lepontmap.vercel.app/images/ghana.png')"></div>
+      <div class="lepont-label">Ghana</div>
+    </button>
+    <button class="lepont-card" data-country="Benin">
+      <div class="lepont-photo" style="background-image:url('https://lepontmap.vercel.app/images/benin.png')"></div>
+      <div class="lepont-label">Benin</div>
+    </button>
+  </div>
+
+  <div id="lepont-map-wrap" style="display:none;">
+    <div class="lepont-map-frame">
+      <iframe
+        id="lepont-map-iframe"
+        src=""
+        width="100%"
+        height="650"
+        style="border:none;display:block;"
+        allowfullscreen
+        loading="lazy"
+        title="Le Pont — Well Map"
+      ></iframe>
+    </div>
+  </div>
+</div>
+
+<style>
+  #lepont-embed-root {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .lepont-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 640px) {
+    .lepont-grid {
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+  }
+
+  .lepont-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+    text-align: left;
+  }
+
+  .lepont-photo {
+    height: 200px;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-color: #1a2e0f;
+    transition: transform 0.4s ease;
+  }
+
+  .lepont-card:hover .lepont-photo {
+    transform: scale(1.05);
+  }
+
+  .lepont-label {
+    background: #76b743;
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    padding: 16px 20px;
+  }
+
+  #lepont-map-wrap {
+    margin-top: 28px;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .lepont-map-frame {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+</style>
+
+<script>
+  (function () {
+    var BASE_URL = 'https://lepontmap.vercel.app';
+
+    var cards = document.querySelectorAll('#lepont-embed-root .lepont-card');
+    var wrap = document.getElementById('lepont-map-wrap');
+    var iframe = document.getElementById('lepont-map-iframe');
+
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        var country = card.getAttribute('data-country');
+        iframe.src = BASE_URL + '/?embed=1&country=' + encodeURIComponent(country);
+        wrap.style.display = 'block';
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  })();
+</script>
