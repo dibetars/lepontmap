@@ -4,10 +4,11 @@ import { useState, useRef, useCallback } from 'react';
 import Map, { Marker, NavigationControl } from 'react-map-gl';
 import type { MapRef } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import type { Well } from '@/lib/types';
+import type { Well, Country } from '@/lib/types';
 import Navigation from './Navigation';
 import ExploreMenu from './ExploreMenu';
 import WellPanel from './WellPanel';
+import CountryGrid from './CountryGrid';
 
 interface Props {
   wells: Well[];
@@ -29,8 +30,9 @@ const COUNTRY_CENTERS: Record<string, { longitude: number; latitude: number; zoo
 const ROAD_FRAGMENTS = ['road', 'tunnel', 'bridge', 'path', 'ferry', 'pedestrian', 'motorway'];
 
 export default function MapClient({ wells, ngoName = 'Le Pont', autoStart = false, lockedCountry }: Props) {
-  const visibleWells = lockedCountry ? wells.filter((w) => w.country === lockedCountry) : wells;
-  const regionCenter = (lockedCountry && COUNTRY_CENTERS[lockedCountry]) ?? REGION_CENTER;
+  const [activeCountry, setActiveCountry] = useState<string | undefined>(lockedCountry);
+  const visibleWells = activeCountry ? wells.filter((w) => w.country === activeCountry) : wells;
+  const regionCenter = (activeCountry && COUNTRY_CENTERS[activeCountry]) ?? REGION_CENTER;
   const [showLanding, setShowLanding] = useState(!autoStart);
   const [selectedWell, setSelectedWell] = useState<Well | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -61,6 +63,18 @@ export default function MapClient({ wells, ngoName = 'Le Pont', autoStart = fals
       essential: true,
     });
   }, [regionCenter]);
+
+  const handleCountrySelect = useCallback((country: Country) => {
+    setActiveCountry(country);
+    setShowLanding(false);
+    const center = COUNTRY_CENTERS[country] ?? REGION_CENTER;
+    mapRef.current?.flyTo({
+      center: [center.longitude, center.latitude],
+      zoom: center.zoom,
+      duration: 2800,
+      essential: true,
+    });
+  }, []);
 
   const handleWellClick = useCallback((well: Well) => {
     setSelectedWell(well);
@@ -160,14 +174,19 @@ export default function MapClient({ wells, ngoName = 'Le Pont', autoStart = fals
               Le Pont
             </h1>
             <p className="font-sans text-sm text-white/75 mb-10 max-w-xs mx-auto leading-relaxed">
-              Bringing safe, clean water to communities across Togo.
+              Bringing safe, clean water to communities across West Africa.
             </p>
-            <button
-              onClick={handleExplore}
-              className="border border-white/80 text-white font-sans text-[11px] tracking-[0.25em] uppercase px-9 py-4 hover:bg-white hover:text-forest transition-all duration-300"
-            >
-              Explore the Wells
-            </button>
+
+            {lockedCountry ? (
+              <button
+                onClick={handleExplore}
+                className="border border-white/80 text-white font-sans text-[11px] tracking-[0.25em] uppercase px-9 py-4 hover:bg-white hover:text-forest transition-all duration-300"
+              >
+                Explore the Wells
+              </button>
+            ) : (
+              <CountryGrid onSelect={handleCountrySelect} />
+            )}
           </div>
 
           {/* Bottom hint */}
