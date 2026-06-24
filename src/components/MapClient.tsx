@@ -30,7 +30,7 @@ const ROAD_FRAGMENTS = ['road', 'tunnel', 'bridge', 'path', 'ferry', 'pedestrian
 
 export default function MapClient({ wells, ngoName = 'Le Pont', autoStart = false, lockedCountry }: Props) {
   const visibleWells = lockedCountry ? wells.filter((w) => w.country === lockedCountry) : wells;
-  const regionCenter = (lockedCountry && COUNTRY_CENTERS[lockedCountry]) ?? REGION_CENTER;
+  const regionCenter = (lockedCountry ? COUNTRY_CENTERS[lockedCountry] : undefined) ?? REGION_CENTER;
   const [showLanding, setShowLanding] = useState(!autoStart);
   const [selectedWell, setSelectedWell] = useState<Well | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
